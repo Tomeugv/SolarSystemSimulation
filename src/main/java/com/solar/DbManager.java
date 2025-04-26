@@ -13,7 +13,6 @@ public class DbManager {
     static {
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("MySQL JDBC Driver loaded successfully");
         } catch (ClassNotFoundException e) {
             throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
@@ -58,9 +57,31 @@ public class DbManager {
                 ps.setString(5, body.getName());
                 ps.addBatch();
             }
+            ps.executeBatch();
+        }
+    }
+    
+    public static void resetToInitialState() throws SQLException {
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
+             Statement stmt = conn.createStatement()) {
             
-            int[] results = ps.executeBatch();
-            System.out.println("Saved " + results.length + " celestial bodies");
+            stmt.executeUpdate(
+                "UPDATE celestial_bodies SET " +
+                "x = CASE name " +
+                "  WHEN 'Sun' THEN 0 " +
+                "  WHEN 'Mercury' THEN 5.791e10 " +
+                "  WHEN 'Venus' THEN 1.0821e11 " +
+                "  WHEN 'Earth' THEN 1.4960e11 " +
+                "  WHEN 'Mars' THEN 2.2794e11 " +
+                "  WHEN 'Jupiter' THEN 7.7857e11 " +
+                "  WHEN 'Saturn' THEN 1.4335e12 " +
+                "  WHEN 'Uranus' THEN 2.8725e12 " +
+                "  WHEN 'Neptune' THEN 4.4951e12 " +
+                "END, " +
+                "y = 0, " +
+                "vx = 0, " +
+                "vy = 0"
+            );
         }
     }
 }

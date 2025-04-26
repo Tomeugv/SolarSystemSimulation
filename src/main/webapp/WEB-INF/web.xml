@@ -8,4 +8,9 @@
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
     </welcome-file-list>
+
+    <context-param>
+        <param-name>resetOnStartup</param-name>
+        <param-value>true</param-value>
+    </context-param>
 </web-app>
