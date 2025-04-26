@@ -1,4 +1,5 @@
 package com.solar;
+
 import com.solar.model.SimulationState;
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -16,6 +17,7 @@ public class SimulationServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             this.state = new SimulationState();
+            System.out.println("Simulation state initialized successfully");
         } catch (SQLException e) {
             throw new ServletException("Database initialization failed", e);
         }
@@ -25,27 +27,43 @@ public class SimulationServlet extends HttpServlet {
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         try {
-            // Get time scale parameter (default to 1 hour)
+            // Handle time scale parameter
             double timeScale = 1.0;
             String scaleParam = req.getParameter("scale");
-            if (scaleParam != null) {
-                timeScale = Double.parseDouble(scaleParam);
+            
+            if (scaleParam != null && !scaleParam.isEmpty()) {
+                try {
+                    timeScale = Double.parseDouble(scaleParam);
+                    timeScale = Math.max(0.01, Math.min(timeScale, 100.0));
+                    System.out.println("Using time scale: " + timeScale);
+                } catch (NumberFormatException e) {
+                    System.err.println("Invalid time scale parameter: " + scaleParam);
+                }
             }
             
-            // Simulate with smaller time steps (1 hour by default)
-            PhysicsEngine.update(state.getBodies(), 60 * 60 * timeScale);
+            // Update physics
+            PhysicsEngine.update(state.getBodies(), timeScale);
             
-            // Save state periodically
-            if (Math.random() < 0.01) { // 1% chance to save
-                DbManager.saveState(state.getBodies());
+            // Save state periodically (1% chance)
+            if (Math.random() < 0.01) {
+                try {
+                    state.saveState();
+                    System.out.println("Auto-saved simulation state");
+                } catch (SQLException e) {
+                    System.err.println("Failed to auto-save state: " + e.getMessage());
+                }
             }
             
+            // Prepare response
             resp.setContentType("application/json");
             resp.setHeader("Access-Control-Allow-Origin", "*");
             resp.getWriter().write(gson.toJson(state.getBodies()));
+            
         } catch (Exception e) {
-            resp.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, 
-                         "Simulation error: " + e.getMessage());
+            resp.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            resp.setContentType("application/json");
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+            e.printStackTrace();
         }
     }
 }

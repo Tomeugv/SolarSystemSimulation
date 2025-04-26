@@ -1,4 +1,5 @@
 package com.solar;
+
 import com.solar.model.CelestialBody;
 import java.sql.*;
 import java.util.ArrayList;
@@ -6,10 +7,17 @@ import java.util.List;
 
 public class DbManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/solar_system";
-    private static final String DB_USER = "root"; // Default username
-    private static final String DB_PASSWORD = ""; // Default password (empty)
+    private static final String DB_USER = "your_username";
+    private static final String DB_PASSWORD = "your_password";
     
-
+    static {
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("MySQL JDBC Driver loaded successfully");
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException("MySQL JDBC Driver not found", e);
+        }
+    }
     
     public static List<CelestialBody> loadInitialState() throws SQLException {
         List<CelestialBody> bodies = new ArrayList<>();
@@ -19,24 +27,19 @@ public class DbManager {
              ResultSet rs = stmt.executeQuery("SELECT * FROM celestial_bodies")) {
             
             while (rs.next()) {
-                double[] initialState = PhysicsEngine.calculateInitialState(
-                    rs.getDouble("semi_major_axis"),
-                    rs.getDouble("eccentricity"),
-                    rs.getDouble("inclination"),
-                    rs.getDouble("mean_anomaly"),
-                    rs.getDouble("mass")
-                );
-                
-                bodies.add(new CelestialBody(
+                CelestialBody body = new CelestialBody(
                     rs.getString("name"),
                     rs.getDouble("mass"),
-                    initialState[0],
-                    initialState[1],
-                    initialState[2],
-                    initialState[3],
+                    rs.getDouble("x"),
+                    rs.getDouble("y"),
+                    rs.getDouble("vx"),
+                    rs.getDouble("vy"),
                     rs.getInt("radius"),
                     rs.getString("color")
-                ));
+                );
+                body.setSemiMajorAxis(rs.getDouble("semi_major_axis"));
+                body.setEccentricity(rs.getDouble("eccentricity"));
+                bodies.add(body);
             }
         }
         return bodies;
@@ -55,17 +58,9 @@ public class DbManager {
                 ps.setString(5, body.getName());
                 ps.addBatch();
             }
-            ps.executeBatch();
-        }
-    }
-    static {
-        try {
-            System.out.println("=== LOADING DRIVER ===");
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            System.out.println("=== DRIVER LOADED ===");
-        } catch (ClassNotFoundException e) {
-            System.err.println("DRIVER NOT FOUND!");
-            e.printStackTrace();
+            
+            int[] results = ps.executeBatch();
+            System.out.println("Saved " + results.length + " celestial bodies");
         }
     }
 }

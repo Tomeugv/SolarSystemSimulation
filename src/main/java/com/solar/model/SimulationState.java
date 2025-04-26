@@ -1,4 +1,5 @@
 package com.solar.model;
+
 import com.solar.DbManager;
 import java.sql.SQLException;
 import java.util.List;
@@ -15,6 +16,6 @@ public class SimulationState {
     }
     
     public void saveState() throws SQLException {
-        DbManager.saveState(bodies);
+        DbManager.saveState(this.bodies);
     }
 }
