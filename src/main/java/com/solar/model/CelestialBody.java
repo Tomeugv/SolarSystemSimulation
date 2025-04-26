@@ -5,6 +5,7 @@ public class CelestialBody {
     private double mass;
     private double x, y;
     private double vx, vy;
+    private double prevX, prevY;
     private int radius;
     private String color;
 
@@ -16,6 +17,8 @@ public class CelestialBody {
         this.y = y;
         this.vx = vx;
         this.vy = vy;
+        this.prevX = x - vx * 0.01; // Small initial backward step
+        this.prevY = y - vy * 0.01;
         this.radius = radius;
         this.color = color;
     }
@@ -31,6 +34,10 @@ public class CelestialBody {
     public void setVx(double vx) { this.vx = vx; }
     public double getVy() { return vy; }
     public void setVy(double vy) { this.vy = vy; }
+    public double getPrevX() { return prevX; }
+    public void setPrevX(double prevX) { this.prevX = prevX; }
+    public double getPrevY() { return prevY; }
+    public void setPrevY(double prevY) { this.prevY = prevY; }
     public int getRadius() { return radius; }
     public String getColor() { return color; }
 }

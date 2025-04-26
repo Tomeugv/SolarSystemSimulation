@@ -1,5 +1,5 @@
 package com.solar.model;
-
+import com.solar.DbManager;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -12,5 +12,9 @@ public class SimulationState {
     
     public List<CelestialBody> getBodies() {
         return bodies;
+    }
+    
+    public void saveState() throws SQLException {
+        DbManager.saveState(bodies);
     }
 }
