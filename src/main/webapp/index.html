@@ -1,23 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>3D Solar System Simulation</title>
+    <title>Solar System (2D)</title>
     <style>
-        body { margin: 0; overflow: hidden; }
-        #info {
-            position: absolute;
-            top: 10px;
-            width: 100%;
-            text-align: center;
-            color: white;
-            font-family: Arial;
-            pointer-events: none;
-        }
+        body { margin: 0; overflow: hidden; background: black; }
+        canvas { display: block; }
     </style>
 </head>
 <body>
-    <div id="info">Solar System Simulation - Loading...</div>
-    <script src="js/three.min.js"></script>
-    <script src="js/simulation.js"></script>
+    <canvas id="solarCanvas" width="800" height="800"></canvas>
+    <script src="js/simulation.js"></script> <!-- No Three.js! -->
 </body>
 </html>
