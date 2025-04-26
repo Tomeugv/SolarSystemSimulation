@@ -6,8 +6,10 @@ import java.util.List;
 
 public class DbManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/solar_system";
-    private static final String DB_USER = "your_username";
-    private static final String DB_PASSWORD = "your_password";
+    private static final String DB_USER = "root"; // Default username
+    private static final String DB_PASSWORD = ""; // Default password (empty)
+    
+
     
     public static List<CelestialBody> loadInitialState() throws SQLException {
         List<CelestialBody> bodies = new ArrayList<>();
@@ -54,6 +56,16 @@ public class DbManager {
                 ps.addBatch();
             }
             ps.executeBatch();
+        }
+    }
+    static {
+        try {
+            System.out.println("=== LOADING DRIVER ===");
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            System.out.println("=== DRIVER LOADED ===");
+        } catch (ClassNotFoundException e) {
+            System.err.println("DRIVER NOT FOUND!");
+            e.printStackTrace();
         }
     }
 }

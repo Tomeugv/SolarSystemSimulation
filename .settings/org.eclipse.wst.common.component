@@ -2,6 +2,10 @@
     <wb-module deploy-name="SolarSystemSimulation">
         <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/" source-path="/WebContent"/>
+        <dependent-module archiveName="mysql-connector-j-9.2.0.jar" deploy-path="/WEB-INF/lib" handle="module:/classpath/lib/C:/Users/Clara/Desktop/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0/mysql-connector-j-9.2.0.jar">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="context-root" value="SolarSystemSimulation"/>
         <property name="java-output-path" value="/SolarSystemSimulation/build/classes"/>
     </wb-module>
