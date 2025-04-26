@@ -5,22 +5,17 @@
          http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
          version="4.0">
 
-    <!-- Servlet Definition -->
     <servlet>
         <servlet-name>SimulationServlet</servlet-name>
         <servlet-class>com.solar.SimulationServlet</servlet-class>
     </servlet>
-
-    <!-- Servlet Mapping -->
+    
     <servlet-mapping>
         <servlet-name>SimulationServlet</servlet-name>
-        <url-pattern>/simulation</url-pattern>
+        <url-pattern>/api/simulation</url-pattern>
     </servlet-mapping>
 
-    <!-- Welcome Files -->
     <welcome-file-list>
         <welcome-file>index.html</welcome-file>
-        <welcome-file>index.jsp</welcome-file>
     </welcome-file-list>
-
 </web-app>

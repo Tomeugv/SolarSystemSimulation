@@ -1,14 +1,11 @@
 const canvas = document.getElementById('solarCanvas');
 const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-const AU_TO_PIXELS = 50;
+let bodies = [];
 
-// Default data if backend fails
-let currentData = [
-    { name: "Sun", x: 0, y: 0, radius: 20, color: "yellow" },
-    { name: "Earth", x: 1.496e11, y: 0, radius: 8, color: "blue" }
-];
+function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+}
 
 function drawBody(x, y, radius, color) {
     ctx.beginPath();
@@ -17,40 +14,39 @@ function drawBody(x, y, radius, color) {
     ctx.fill();
 }
 
-function render() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    
-    currentData.forEach(body => {
-        const screenX = centerX + (body.x / 1.496e11 * AU_TO_PIXELS);
-        const screenY = centerY + (body.y / 1.496e11 * AU_TO_PIXELS);
-        drawBody(screenX, screenY, body.radius, body.color);
-    });
-    
-    requestAnimationFrame(render);
-}
-
 async function fetchData() {
     try {
-        const response = await fetch('/SolarSystemSimulation/simulation');
-        
-        // Check if response is HTML (error case)
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('text/html')) {
-            console.error('Server returned HTML instead of JSON');
-            return;
-        }
-        
-        const data = await response.json();
-        currentData = data;
+        const response = await fetch('/SolarSystemSimulation/api/simulation');
+        bodies = await response.json();
     } catch (error) {
-        console.error('Fetch error:', error);
+        console.error("Fetch error:", error);
     }
 }
 
-// Start rendering and polling
-render();
-setInterval(fetchData, 1000); // Update every second
+function render() {
+    // Clear with semi-transparent black for trails
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Center of screen
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    
+    // Draw all bodies (scale: 1 AU = 100 pixels)
+    bodies.forEach(body => {
+        const screenX = centerX + (body.x / 1.496e11 * 100);
+        const screenY = centerY + (body.y / 1.496e11 * 100);
+        drawBody(screenX, screenY, body.radius, body.color);
+    });
+}
+
+async function animate() {
+    await fetchData();
+    render();
+    requestAnimationFrame(animate);
+}
+
+// Initialize
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+animate();
