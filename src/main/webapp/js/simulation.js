@@ -1,12 +1,13 @@
 /**
- * SIMULADOR DEL SISTEMA SOLAR
- * 
- * Aquest codi gestiona la simulació visual del sistema solar, incloent:
- * - Renderitzat dels planetes i les seves òrbites
- * - Interacció amb l'usuari (zoom, moviment)
- * - Control del temps de simulació
- * - Gestió de traces orbitals
+ * Obté els planetes seleccionats dels checkboxes
+ * @returns {Array} Llista de noms de planetes seleccionats
  */
+function getSelectedPlanets() {
+    const selected = Array.from(document.querySelectorAll('.planet-select input:checked'))
+        .map(checkbox => checkbox.value);
+    console.log("Planetes seleccionats:", selected); // Per depuració
+    return selected;
+}
 
 /* ==================== ESTAT GLOBAL ==================== */
 let bodies = []; // Llista de cossos celestes actuals
@@ -91,13 +92,11 @@ timeSlider.addEventListener('input', async () => {
     await updateSimulation();
 });
 
-// Iniciar nova simulació
 document.getElementById('startSim').addEventListener('click', async () => {
     try {
-        const selectedPlanets = Array.from(document.querySelectorAll('.planet-select input:checked'))
-            .map(cb => cb.value);
-
-        // Assegurar que el Sol està sempre present
+        const selectedPlanets = getSelectedPlanets(); // Ara hauria de funcionar
+        
+        // Assegura't que el Sol està sempre present
         if (!selectedPlanets.includes('Sun')) {
             selectedPlanets.unshift('Sun');
         }
@@ -110,23 +109,25 @@ document.getElementById('startSim').addEventListener('click', async () => {
             body: JSON.stringify(selectedPlanets)
         });
 
-        if (response.ok) {
-            planetTraces.clear(); 
-            centerX = canvas.width / 2;
-            centerY = canvas.height / 2;
-
-            // Petita espera per assegurar la càrrega
-            setTimeout(async () => {
-                await updateSimulation();
-            }, 100);
-        } else {
-            console.error('Error en iniciar nova simulació');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
+
+        // Reinicia les traces i la vista
+        planetTraces.clear(); 
+        centerX = canvas.width / 2;
+        centerY = canvas.height / 2;
+
+        // Petita espera per assegurar la càrrega
+        setTimeout(async () => {
+            await updateSimulation();
+            hideLoading();
+        }, 100);
 
     } catch (error) {
         console.error("Error en iniciar simulació:", error);
-    } finally {
         hideLoading();
+        alert("Error en iniciar la simulació. Si us plau, torna-ho a provar.");
     }
 });
 
