@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ca">
 <head>
     <meta charset="UTF-8">
-    <title>Solar System Simulation</title>
+    <title>Simulació Sistema Solar</title>
     <style>
-        /* CSS */
+        /* Estils bàsics */
         body {
             margin: 0;
             overflow: hidden;
@@ -36,92 +36,109 @@
         }
     </style>
 </head>
+
 <body>
     <div class="sim-controls">
+        <!-- Selecció de planetes -->
         <div class="planet-select">
-            <strong>Select Planets:</strong><br>
-            <label><input type="checkbox" value="Mercury" checked> Mercury</label>
+            <strong>Selecciona Planetes:</strong><br>
+            <label><input type="checkbox" value="Mercury" checked> Mercuri</label>
             <label><input type="checkbox" value="Venus" checked> Venus</label>
-            <label><input type="checkbox" value="Earth" checked> Earth</label>
-            <label><input type="checkbox" value="Mars" checked> Mars</label>
-            <label><input type="checkbox" value="Jupiter" checked> Jupiter</label>
+            <label><input type="checkbox" value="Earth" checked> Terra</label>
+            <label><input type="checkbox" value="Mars" checked> Mart</label>
+            <label><input type="checkbox" value="Jupiter" checked> Júpiter</label>
             <label><input type="checkbox" value="Saturn" checked> Saturn</label>
-            <label><input type="checkbox" value="Uranus" checked> Uranus</label>
-            <label><input type="checkbox" value="Neptune" checked> Neptune</label>
+            <label><input type="checkbox" value="Uranus" checked> Urà</label>
+            <label><input type="checkbox" value="Neptune" checked> Neptú</label>
         </div>
-        <button id="startSim" class="control-btn">Start Simulation</button>
-        <button id="zoomIn" class="control-btn">Zoom In</button>
-        <button id="zoomOut" class="control-btn">Zoom Out</button>
-        <div class="control-label">Time Speed</div>
+
+        <!-- Botons de control -->
+        <button id="startSim" class="control-btn">Inicia Simulació</button>
+        <button id="zoomIn" class="control-btn">Apropar</button>
+        <button id="zoomOut" class="control-btn">Allunyar</button>
+        <div class="control-label">Velocitat del Temps</div>
         <input type="range" id="timeSlider" class="control-slider" min="0.01" max="5" step="0.01" value="1">
         <div id="scaleDisplay">1 AU = 173px</div>
-        <label><input type="checkbox" id="showTraces" checked> Show Traces</label>
-        <button id="resetSim" class="control-btn reset-btn">Reset</button>
+        <label><input type="checkbox" id="showTraces" checked> Mostrar Trajectòries</label>
+        <button id="resetSim" class="control-btn reset-btn">Reiniciar</button>
     </div>
+
+    <!-- Pantalla de Càrrega -->
     <div id="loadingOverlay" style="
-    display: none;
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6);
-    color: white;
-    font-size: 2em;
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 200;">
-    Loading Simulation...
-	</div>
-    <!-- Manage Planets Button -->
-<button id="openAdminBtn" class="control-btn" style="position: absolute; top: 10px; right: 10px; z-index: 110;">Manage Planets</button>
+        display: none;
+        position: absolute;
+        top: 0; left: 0;
+        width: 100%; height: 100%;
+        background: rgba(0,0,0,0.6);
+        color: white;
+        font-size: 2em;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;">
+        Carregant Simulació...
+    </div>
 
-<!-- Admin Panel Sidebar -->
-<div id="adminPanel" style="
-    position: fixed;
-    top: 0;
-    right: -420px;
-    width: 400px;
-    height: 100%;
-    background: #222;
-    color: white;
-    overflow-y: auto;
-    overflow-x: hidden;
-    transition: right 0.3s ease;
-    z-index: 150;
-    padding: 20px;
-    box-sizing: border-box;
-">
+    <!-- Botó per Obrir el Panell d'Administració -->
+    <button id="openAdminBtn" class="control-btn" style="
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        z-index: 110;">
+        Administrar Planetes
+    </button>
 
+    <!-- Panell d'Administració -->
+    <div id="adminPanel" style="
+        position: fixed;
+        top: 0;
+        right: -420px;
+        width: 400px;
+        height: 100%;
+        background: #222;
+        color: white;
+        overflow-y: auto;
+        overflow-x: hidden;
+        transition: right 0.3s ease;
+        z-index: 150;
+        padding: 20px;
+        box-sizing: border-box;">
+        
+        <h2>Administració de Planetes</h2>
+        <button id="closeAdminBtn" class="control-btn" style="background: #d9534f;">Tancar</button>
+        <hr>
 
-    <h2>Planet Admin</h2>
-    <button id="closeAdminBtn" class="control-btn" style="background: #d9534f;">Close</button>
-    <hr>
+        <!-- Llistat de planetes existents -->
+        <h3>Llista de Planetes</h3>
+        <div id="planetList"></div>
+        <hr>
 
-    <h3>Planet List</h3>
-    <div id="planetList"></div>
-    <hr>
+        <!-- Formulari per afegir nou planeta -->
+        <h3>Afegir Planeta</h3>
+        <form id="addPlanetForm">
+            <input type="text" id="newName" placeholder="Nom" required><br>
+            <input type="number" id="newMass" placeholder="Massa (kg)" required><br>
+            <input type="number" id="newAxis" placeholder="Semi-eix major (m)" required><br>
+            <input type="number" id="newRadius" placeholder="Radi (px)" required><br>
+            <input type="number" id="newEccentricity" placeholder="Excentricitat (0.0-1.0)" step="0.0001" required><br>
+            <input type="color" id="newColor" value="#ffffff"><br><br>
+            <button type="submit" class="control-btn">Afegir</button>
+        </form>
+        <hr>
 
-    <h3>Add Planet</h3>
-    <form id="addPlanetForm">
-        <input type="text" id="newName" placeholder="Name" required><br>
-        <input type="number" id="newMass" placeholder="Mass (kg)" required><br>
-        <input type="number" id="newAxis" placeholder="Semi-major axis (m)" required><br>
-        <input type="number" id="newRadius" placeholder="Radius (px)" required><br>
-        <input type="number" id="newEccentricity" placeholder="Eccentricity (0.0-1.0)" step="0.0001" required><br>
-        <input type="color" id="newColor" value="#ffffff"><br><br>
-        <button type="submit" class="control-btn">Add Planet</button>
-    </form>
-    <hr>
+        <!-- Botó per reiniciar la base de dades -->
+        <h3>Reiniciar Base de Dades</h3>
+        <button id="resetDatabaseBtn" class="control-btn reset-btn">Reiniciar a Valors Per Defecte</button>
+    </div>
 
-    <h3>Reset Database</h3>
-    <button id="resetDatabaseBtn" class="control-btn reset-btn">Reset to Default</button>
-</div>
+    <!-- Script del menú -->
+    <script src="js/admin.js"></script>
 
-<script src="js/admin.js"></script>
-    
+    <!-- Canvas de la simulació -->
     <canvas id="solarCanvas"></canvas>
 
+    <!-- Script principal de simulació -->
     <script src="js/simulation.js"></script>
 </body>
 </html>

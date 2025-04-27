@@ -12,20 +12,23 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.List;
 
+//Servlet per iniciar una nova simulació amb els planetes seleccionats
+ 
 @WebServlet("/api/simulation/start")
 public class StartSimulationServlet extends HttpServlet {
-    private final Gson gson = new Gson();
+    private final Gson gson = new Gson();  //Gson per a la conversió JSON
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
 
+        // Configuració de CORS i tipus de contingut
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Methods", "POST");
-        resp.setContentType("application/json");
+        resp.setContentType("application/json");  // La resposta serà en format JSON
 
         try {
-            // Read the entire body into a string
+            // 1. Llegeix el cos de la petició (JSON amb planetes seleccionats)
             StringBuilder jsonBuilder = new StringBuilder();
             BufferedReader reader = req.getReader();
             String line;
@@ -34,29 +37,27 @@ public class StartSimulationServlet extends HttpServlet {
             }
             String json = jsonBuilder.toString();
 
-            // Parse it properly
+            // 2. Converteix el JSON a una llista de noms de planetes
             Type listType = new TypeToken<List<String>>() {}.getType();
-            List<String> selectedPlanets = gson.fromJson(json, listType);
-
+            List<String> selectedPlanets = gson.fromJson(json, listType);  // Converteix de JSON a List<String>
+            
             if (selectedPlanets == null || selectedPlanets.isEmpty()) {
                 throw new Exception("No planets selected");
             }
 
-            // Create the simulation state FULLY
+            // 4. Crea un nou estat de simulació amb els planetes seleccionats
             SimulationState newState = new SimulationState(selectedPlanets);
-            newState.reset(); // MAKE SURE we reset before setting it to context!
+            newState.reset();  // Reinicia l'estat per assegurar valors inicials correctes
 
-            // Save it into ServletContext
+            // 5. Guarda el nou
             getServletContext().setAttribute("simulationState", newState);
 
-            // Now we can safely reply success
             resp.getWriter().write("{\"status\":\"success\"}");
 
         } catch (Exception e) {
-            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);  // Codi 400 per errors de client
             resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
-            e.printStackTrace();
+            e.printStackTrace(); 
         }
     }
 }
-

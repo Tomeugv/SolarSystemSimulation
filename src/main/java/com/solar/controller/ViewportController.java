@@ -3,6 +3,7 @@ package com.solar.controller;
 import java.util.Map;
 import java.util.HashMap;
 
+//Gestiona el zoom i el moviment de la càmera
 public class ViewportController {
     private double centerX;
     private double centerY;
@@ -22,8 +23,7 @@ public class ViewportController {
     }
     
     public synchronized void update() {
-        // Smooth zoom animation (ease factor 0.1)
-        this.currentScale += (targetScale - currentScale) * 0.1;
+        this.currentScale += (targetScale - currentScale) * 0.1; //el nombre s'asegura que la trancisió sigui suau
     }
     
     public Map<String, Double> calculateScreenPosition(double worldX, double worldY) {
@@ -32,7 +32,7 @@ public class ViewportController {
         return Map.of("x", screenX, "y", screenY);
     }
     
-    // Movement controls
+
     public synchronized void move(double dx, double dy) {
         this.centerX += dx;
         this.centerY += dy;

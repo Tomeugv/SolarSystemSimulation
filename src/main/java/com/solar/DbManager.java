@@ -8,8 +8,8 @@ import java.util.List;
 
 public class DbManager {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/solar_system";
-    private static final String DB_USER = "your_username";
-    private static final String DB_PASSWORD = "your_password";
+    private static final String DB_USER = "root";
+    private static final String DB_PASSWORD = "";
 
     static {
         try {
@@ -18,7 +18,7 @@ public class DbManager {
             throw new RuntimeException("MySQL JDBC Driver not found", e);
         }
     }
-
+    // Carregam tots els cossos inicials a partir de la base de dades
     public static List<CelestialBody> loadInitialState() throws SQLException {
         List<CelestialBody> bodies = new ArrayList<>();
 
@@ -45,23 +45,17 @@ public class DbManager {
         return bodies;
     }
 
-  
+    // Carregam unicament cossos que s'hagin seleccionat
     public static List<CelestialBody> loadSelectedBodies(List<String> names) throws SQLException {
-        List<CelestialBody> bodies = new ArrayList<>();
-        
+        List<CelestialBody> bodies = new ArrayList<>(); 
         if (names.isEmpty()) return bodies;
-
         String placeholders = String.join(",", names.stream().map(x -> "?").toArray(String[]::new));
-
         String query = "SELECT * FROM celestial_bodies WHERE name IN (" + placeholders + ")";
-
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
-             PreparedStatement ps = conn.prepareStatement(query)) {
-            
+             PreparedStatement ps = conn.prepareStatement(query)) {           
             for (int i = 0; i < names.size(); i++) {
                 ps.setString(i + 1, names.get(i));
             }
-
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
                     CelestialBody body = new CelestialBody(
@@ -82,12 +76,11 @@ public class DbManager {
         }
         return bodies;
     }
-
+    // Cream un Savestate que desi les posicions i velocitats actuals
     public static void saveState(List<CelestialBody> bodies) throws SQLException {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD);
              PreparedStatement ps = conn.prepareStatement(
                  "UPDATE celestial_bodies SET x=?, y=?, vx=?, vy=? WHERE name=?")) {
-
             for (CelestialBody body : bodies) {
                 ps.setDouble(1, body.getX());
                 ps.setDouble(2, body.getY());

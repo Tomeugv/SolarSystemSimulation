@@ -1,5 +1,5 @@
 package com.solar.model;
-
+//classe per representar un punt bidimensional
 public class Point2D {
     public double x;
     public double y;

@@ -1,5 +1,5 @@
 package com.solar.model;
-
+//Constructor del nostre cos 
 public class CelestialBody {
     private final String name;
     private final double mass;
@@ -24,7 +24,7 @@ public class CelestialBody {
         this.vy = vy;
         this.radius = radius;
         this.color = color;
-        this.prevX = x - vx * 3600; // Initialize previous position
+        this.prevX = x - vx * 3600;
         this.prevY = y - vy * 3600;
     }
 
