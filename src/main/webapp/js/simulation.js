@@ -1,5 +1,3 @@
-
-
 // State
 let bodies = [];
 let planetTraces = new Map();

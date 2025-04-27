@@ -11,38 +11,54 @@ import javax.servlet.annotation.*;
 import java.io.IOException;
 import java.util.*;
 
+/**
+ * Servlet principal per a la simulació del sistema solar.
+ * Gestiona les peticions GET per actualitzar l'estat de la simulació
+ * i retornar les dades dels cossos celestes en format JSON.
+ */
 @WebServlet("/api/simulation")
 public class SimulationServlet extends HttpServlet {
     private ViewportController viewport;
     private final Gson gson = new Gson();
     
+    /**
+     * Inicialitza el servlet creant un nou ViewportController.
+     */
     @Override
     public void init() throws ServletException {
         try {
-            this.viewport = new ViewportController(800, 600); // Default size
+            // Inicialitza el viewport amb una mida per defecte (800x600)
+            this.viewport = new ViewportController(800, 600);
         } catch (Exception e) {
-            throw new ServletException("Initialization failed", e);
+            throw new ServletException("Error en la inicialització del ViewportController", e);
         }
     }
 
+    /**
+     * Processa les peticions per actualitzar i obtenir l'estat de la simulació.
+     */
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) 
             throws IOException {
-        // Enable CORS
+
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setContentType("application/json");
         
         try {
+            // Obtenim l'estat de la simulació
             SimulationState state = (SimulationState) getServletContext().getAttribute("simulationState");
             if (state == null) {
-                throw new IllegalStateException("Simulation state not initialized.");
+                throw new IllegalStateException("L'estat de la simulació no s'ha inicialitzat.");
             }
 
+            // Processa els canvis en el viewport 
             handleViewportChanges(req);
             
+            // Actualitza la simulació
             double timeScale = parseTimeScale(req);
             PhysicsEngine.update(state.getBodies(), timeScale * 200);
            
+            // Prepara la resposta JSON
             Map<String, Object> response = new HashMap<>();
             response.put("scale", viewport.getCurrentScale());
             response.put("bodies", prepareBodyData(state.getBodies()));
@@ -55,30 +71,47 @@ public class SimulationServlet extends HttpServlet {
         }
     }
     
+    /**
+     * Gestiona els canvis en el viewport basats en els paràmetres de la petició.
+     */
     private void handleViewportChanges(HttpServletRequest req) {
+        // Processa moviment del viewport
         if (req.getParameter("moveX") != null) {
             viewport.move(
                 Double.parseDouble(req.getParameter("moveX")),
                 Double.parseDouble(req.getParameter("moveY"))
             );
         }
+        
+        // Processa zoom in/out
         if ("in".equals(req.getParameter("zoom"))) viewport.zoomIn();
         if ("out".equals(req.getParameter("zoom"))) viewport.zoomOut();
+        
+        // Actualitza l'estat del viewport
         viewport.update();
     }
     
+    /**
+     * Analitza i valida l'escala de temps de la simulació.
+     */
     private double parseTimeScale(HttpServletRequest req) {
         String scaleParam = req.getParameter("scale");
         if (scaleParam == null) return 1.0;
         
         double scale = Double.parseDouble(scaleParam);
-        return Math.max(0.01, Math.min(scale, 100.0));
+        return Math.max(0.01, Math.min(scale, 100.0)); // Assegura valors dins del rang permès
     }
     
+    /**
+     * Prepara les dades dels cossos celestes per a la resposta JSON.
+     */
     private List<Map<String, Object>> prepareBodyData(List<CelestialBody> bodies) {
         List<Map<String, Object>> bodyData = new ArrayList<>();
+        
         for (CelestialBody body : bodies) {
             Map<String, Object> data = new HashMap<>();
+            
+            // Calcula posició en pantalla
             Map<String, Double> screenPos = viewport.calculateScreenPosition(
                 body.getX(), body.getY()
             );
@@ -93,8 +126,7 @@ public class SimulationServlet extends HttpServlet {
 
             bodyData.add(data);
         }
+        
         return bodyData;
     }
-
 }
-

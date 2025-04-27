@@ -1,4 +1,4 @@
-// Open/Close Admin Panel
+/ Open/Close Admin Panel
 document.getElementById('openAdminBtn').addEventListener('click', () => {
     document.getElementById('adminPanel').style.right = '0';
 });
