@@ -19,8 +19,4 @@ public class SimulationContextListener implements ServletContextListener {
         }
     }
 
-    @Override
-    public void contextDestroyed(ServletContextEvent sce) {
-        // Nothing special needed
-    }
 }

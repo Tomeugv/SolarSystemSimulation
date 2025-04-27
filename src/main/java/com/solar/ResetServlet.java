@@ -7,13 +7,13 @@ import java.io.IOException;
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
-
+//servelt per reiniciar correctament la simulació
 @WebServlet("/api/simulation/reset")
 public class ResetServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) 
             throws ServletException, IOException {
         
-        // Enable CORS
+
         resp.setHeader("Access-Control-Allow-Origin", "*");
         resp.setHeader("Access-Control-Allow-Methods", "POST");
         resp.setContentType("application/json");
