@@ -32,22 +32,32 @@ public class PhysicsEngine {
      */
     public static void initializeOrbits(List<CelestialBody> bodies) {
         CelestialBody sun = findSun(bodies);
-        
+
         for (CelestialBody body : bodies) {
             if (body == sun) continue;
-            
+
             double dx = body.getX() - sun.getX();
             double dy = body.getY() - sun.getY();
-            double r = Math.sqrt(dx*dx + dy*dy + SOFTENING);
+            double r = Math.sqrt(dx * dx + dy * dy + SOFTENING);
 
-            //Account for eccentricity
-            double orbitalVelocity = Math.sqrt(G * sun.getMass() * (1 + body.getEccentricity()) / r);
+            double semiMajorAxis = body.getSemiMajorAxis();
+            double orbitalVelocity;
+
+            if (semiMajorAxis > 0) {
+                // Correct vis-viva formula
+                orbitalVelocity = Math.sqrt(G * sun.getMass() * (2.0 / r - 1.0 / semiMajorAxis));
+            } else {
+                // fallback to circular if something wrong
+                orbitalVelocity = Math.sqrt(G * sun.getMass() / r);
+            }
 
             double angle = Math.atan2(dy, dx);
+
             body.setVx(-orbitalVelocity * Math.sin(angle));
             body.setVy(orbitalVelocity * Math.cos(angle));
         }
     }
+
     
     // Private helper methods
     private static double[][] calculateGravitationalForces(List<CelestialBody> bodies) {
