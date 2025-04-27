@@ -32,9 +32,9 @@ public class SimulationState {
             copy.setEccentricity(original.getEccentricity());
             this.bodies.add(copy);
         }
+        // CORRECTED: Call from PhysicsEngine instead
         PhysicsEngine.initializeOrbits(this.bodies);
     }
-    
     public List<CelestialBody> getBodies() {
         return Collections.unmodifiableList(bodies);
     }
