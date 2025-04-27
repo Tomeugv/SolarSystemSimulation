@@ -2,6 +2,7 @@ package com.solar.model;
 
 import com.solar.DbManager;
 import com.solar.PhysicsEngine;
+
 import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -10,8 +11,15 @@ public class SimulationState {
     private List<CelestialBody> bodies;
     private final List<CelestialBody> initialBodies;
     
+    // Default constructor (load ALL planets)
     public SimulationState() throws SQLException {
         this.initialBodies = Collections.unmodifiableList(DbManager.loadInitialState());
+        reset();
+    }
+    
+    //  New constructor (load SELECTED planets)
+    public SimulationState(List<String> selectedNames) throws SQLException {
+        this.initialBodies = Collections.unmodifiableList(DbManager.loadSelectedBodies(selectedNames));
         reset();
     }
     
@@ -32,9 +40,9 @@ public class SimulationState {
             copy.setEccentricity(original.getEccentricity());
             this.bodies.add(copy);
         }
-        // CORRECTED: Call from PhysicsEngine instead
         PhysicsEngine.initializeOrbits(this.bodies);
     }
+    
     public List<CelestialBody> getBodies() {
         return Collections.unmodifiableList(bodies);
     }

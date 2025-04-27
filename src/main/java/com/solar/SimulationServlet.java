@@ -13,14 +13,12 @@ import java.util.*;
 
 @WebServlet("/api/simulation")
 public class SimulationServlet extends HttpServlet {
-    private SimulationState state;
     private ViewportController viewport;
     private final Gson gson = new Gson();
     
     @Override
     public void init() throws ServletException {
         try {
-            this.state = (SimulationState) getServletContext().getAttribute("simulationState");
             this.viewport = new ViewportController(800, 600); // Default size
         } catch (Exception e) {
             throw new ServletException("Initialization failed", e);
@@ -35,14 +33,19 @@ public class SimulationServlet extends HttpServlet {
         resp.setContentType("application/json");
         
         try {
+            SimulationState state = (SimulationState) getServletContext().getAttribute("simulationState");
+            if (state == null) {
+                throw new IllegalStateException("Simulation state not initialized.");
+            }
+
             handleViewportChanges(req);
             
             double timeScale = parseTimeScale(req);
-            PhysicsEngine.update(state.getBodies(), timeScale);
-            
+            PhysicsEngine.update(state.getBodies(), timeScale * 200);
+           
             Map<String, Object> response = new HashMap<>();
             response.put("scale", viewport.getCurrentScale());
-            response.put("bodies", prepareBodyData());
+            response.put("bodies", prepareBodyData(state.getBodies()));
             
             resp.getWriter().write(gson.toJson(response));
             
@@ -72,9 +75,9 @@ public class SimulationServlet extends HttpServlet {
         return Math.max(0.01, Math.min(scale, 100.0));
     }
     
-    private List<Map<String, Object>> prepareBodyData() {
+    private List<Map<String, Object>> prepareBodyData(List<CelestialBody> bodies) {
         List<Map<String, Object>> bodyData = new ArrayList<>();
-        for (CelestialBody body : state.getBodies()) {
+        for (CelestialBody body : bodies) {
             Map<String, Object> data = new HashMap<>();
             Map<String, Double> screenPos = viewport.calculateScreenPosition(
                 body.getX(), body.getY()
@@ -83,8 +86,8 @@ public class SimulationServlet extends HttpServlet {
             data.put("name", body.getName());
             data.put("screenX", screenPos.get("x"));
             data.put("screenY", screenPos.get("y"));
-            data.put("worldX", body.getX()); 
-            data.put("worldY", body.getY());  
+            data.put("worldX", body.getX());
+            data.put("worldY", body.getY());
             data.put("radius", body.getRadius());
             data.put("color", body.getColor());
 
@@ -94,3 +97,4 @@ public class SimulationServlet extends HttpServlet {
     }
 
 }
+

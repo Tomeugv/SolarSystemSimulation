@@ -1,4 +1,4 @@
-//  Solar System Simulation (Fixed + Fabulous Final Version)
+
 
 // State
 let bodies = [];
@@ -18,11 +18,17 @@ const BASE_PATH = '/SolarSystemSimulation';
 // Camera State
 let isDragging = false;
 let lastX = 0, lastY = 0;
-
-// Viewport center tracking (local version)
 let centerX = canvas.width / 2;
 let centerY = canvas.height / 2;
-let currentScale = 100;
+let currentScale = 173; // 1 AU = 173px
+
+function showLoading() {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+}
+
+function hideLoading() {
+    document.getElementById('loadingOverlay').style.display = 'none';
+}
 
 // Event Listeners
 canvas.addEventListener('mousedown', (e) => {
@@ -62,10 +68,51 @@ timeSlider.addEventListener('input', async () => {
     await updateSimulation();
 });
 
+document.getElementById('startSim').addEventListener('click', async () => {
+    try {
+        const selectedPlanets = Array.from(document.querySelectorAll('.planet-select input:checked'))
+            .map(cb => cb.value);
+
+        if (!selectedPlanets.includes('Sun')) {
+            selectedPlanets.unshift('Sun');
+        }
+
+        showLoading();
+
+        const response = await fetch(`${BASE_PATH}/api/simulation/start`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(selectedPlanets)
+        });
+
+        if (response.ok) {
+            planetTraces.clear(); 
+            centerX = canvas.width / 2;
+            centerY = canvas.height / 2;
+
+            //  Wait a little before refreshing planets
+            setTimeout(async () => {
+                await updateSimulation();
+            }, 100);
+        } else {
+            console.error('Failed to start new simulation');
+        }
+
+    } catch (error) {
+        console.error("Start simulation failed:", error);
+    } finally {
+        hideLoading();
+    }
+});
+
+
+
+
+// Reset Button
 document.getElementById('resetSim').addEventListener('click', async () => {
     try {
         await fetch(`${BASE_PATH}/api/simulation/reset`, { method: 'POST' });
-        planetTraces.clear(); //  Clear traces properly on reset
+        planetTraces.clear();
         await updateSimulation();
     } catch (error) {
         console.error("Reset failed:", error);
@@ -79,14 +126,20 @@ async function updateSimulation() {
         const data = await response.json();
         
         bodies = data.bodies;
-        currentScale = parseFloat(data.scale) || 100;
+        currentScale = parseFloat(data.scale) || 173;
         scaleDisplay.textContent = `1 AU = ${currentScale.toFixed(0)}px`;
 
         render();
+        
+        // HIDE LOADING if it's visible
+        hideLoading();
+
     } catch (error) {
         console.error("Update failed:", error);
+        hideLoading(); // Even on error, hide it so user is not stuck
     }
 }
+
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -98,8 +151,10 @@ function render() {
     
     bodies.forEach(body => {
         const screenPos = viewportToScreen(body.worldX, body.worldY);
+
         const zoomMultiplier = calculateZoomMultiplier();
-        const dynamicRadius = Math.max(1, body.radius * zoomMultiplier);
+        const clampedMultiplier = Math.min(zoomMultiplier, 1.3);
+        const dynamicRadius = Math.max(1, body.radius * clampedMultiplier);
 
         ctx.beginPath();
         ctx.arc(screenPos.x, screenPos.y, dynamicRadius, 0, Math.PI * 2);
@@ -112,10 +167,8 @@ function render() {
     });
 }
 
-
-
 function calculateZoomMultiplier() {
-    const baseScale = 100;
+    const baseScale = 173;
     return currentScale / baseScale;
 }
 
@@ -159,7 +212,6 @@ function viewportToScreen(worldX, worldY) {
     };
 }
 
-
 // Initialize
 function resizeCanvas() {
     canvas.width = window.innerWidth;
@@ -173,5 +225,4 @@ function resizeCanvas() {
 
 window.addEventListener('resize', resizeCanvas);
 resizeCanvas();
-setInterval(updateSimulation, 1000 / 30); // ~30fps (smooth but slower)
-
+setInterval(updateSimulation, 1000 / 30);

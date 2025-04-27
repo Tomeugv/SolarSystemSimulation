@@ -1,18 +1,20 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
     <title>Solar System Simulation</title>
     <style>
-        body { 
-            margin: 0; 
-            overflow: hidden; 
+        /* CSS */
+        body {
+            margin: 0;
+            overflow: hidden;
             background: #000;
             font-family: Arial, sans-serif;
         }
-        canvas { 
-            display: block; 
-            width: 100%; 
-            height: 100%; 
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
         }
         .sim-controls {
             position: absolute;
@@ -24,54 +26,104 @@
             color: white;
             z-index: 100;
         }
-        .control-btn {
-            background: #444;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            padding: 5px 10px;
-            margin: 2px;
-            cursor: pointer;
+        .planet-select {
+            margin-bottom: 10px;
         }
-        .control-btn:hover {
-            background: #666;
-        }
-        .control-btn.reset-btn {
-            background: #d9534f;
-            margin-top: 10px;
-        }
-        .control-btn.reset-btn:hover {
-            background: #c9302c;
-        }
-        .control-label {
-            margin: 5px 0;
+        .planet-select label {
+            display: block;
             font-size: 14px;
-        }
-        .control-slider {
-            width: 200px;
-            margin: 5px 0;
+            margin-bottom: 2px;
         }
     </style>
 </head>
 <body>
-    <canvas id="solarCanvas"></canvas>
-
     <div class="sim-controls">
+        <div class="planet-select">
+            <strong>Select Planets:</strong><br>
+            <label><input type="checkbox" value="Mercury" checked> Mercury</label>
+            <label><input type="checkbox" value="Venus" checked> Venus</label>
+            <label><input type="checkbox" value="Earth" checked> Earth</label>
+            <label><input type="checkbox" value="Mars" checked> Mars</label>
+            <label><input type="checkbox" value="Jupiter" checked> Jupiter</label>
+            <label><input type="checkbox" value="Saturn" checked> Saturn</label>
+            <label><input type="checkbox" value="Uranus" checked> Uranus</label>
+            <label><input type="checkbox" value="Neptune" checked> Neptune</label>
+        </div>
+        <button id="startSim" class="control-btn">Start Simulation</button>
         <button id="zoomIn" class="control-btn">Zoom In</button>
         <button id="zoomOut" class="control-btn">Zoom Out</button>
-        <button id="resetSim" class="control-btn reset-btn">Reset Simulation</button>
-        
-
-        <div class="control-label">Time Scale:</div>
-        <input type="range" id="timeSlider" min="0.01" max="100" value="1" step="0.01" class="control-slider">
-        <div id="scaleDisplay" class="control-label">1 AU = ??? px</div>
-
-        <div>
-            <label><input type="checkbox" id="showTraces"> Show Traces</label>
-        </div>
+        <div class="control-label">Time Speed</div>
+        <input type="range" id="timeSlider" class="control-slider" min="0.01" max="5" step="0.01" value="1">
+        <div id="scaleDisplay">1 AU = 173px</div>
+        <label><input type="checkbox" id="showTraces" checked> Show Traces</label>
+        <button id="resetSim" class="control-btn reset-btn">Reset</button>
     </div>
+    <div id="loadingOverlay" style="
+    display: none;
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    background: rgba(0,0,0,0.6);
+    color: white;
+    font-size: 2em;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;">
+    Loading Simulation...
+	</div>
+    <!-- Manage Planets Button -->
+<button id="openAdminBtn" class="control-btn" style="position: absolute; top: 10px; right: 10px; z-index: 110;">Manage Planets</button>
+
+<!-- Admin Panel Sidebar -->
+<div id="adminPanel" style="
+    position: fixed;
+    top: 0;
+    right: -420px;
+    width: 400px;
+    height: 100%;
+    background: #222;
+    color: white;
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: right 0.3s ease;
+    z-index: 150;
+    padding: 20px;
+    box-sizing: border-box;
+">
+
+
+    <h2>Planet Admin</h2>
+    <button id="closeAdminBtn" class="control-btn" style="background: #d9534f;">Close</button>
+    <hr>
+
+    <h3>Planet List</h3>
+    <div id="planetList"></div>
+    <hr>
+
+    <h3>Add Planet</h3>
+    <form id="addPlanetForm">
+        <input type="text" id="newName" placeholder="Name" required><br>
+        <input type="number" id="newMass" placeholder="Mass (kg)" required><br>
+        <input type="number" id="newAxis" placeholder="Semi-major axis (m)" required><br>
+        <input type="number" id="newRadius" placeholder="Radius (px)" required><br>
+        <input type="number" id="newEccentricity" placeholder="Eccentricity (0.0-1.0)" step="0.0001" required><br>
+        <input type="color" id="newColor" value="#ffffff"><br><br>
+        <button type="submit" class="control-btn">Add Planet</button>
+    </form>
+    <hr>
+
+    <h3>Reset Database</h3>
+    <button id="resetDatabaseBtn" class="control-btn reset-btn">Reset to Default</button>
+</div>
+
+<script src="js/admin.js"></script>
+    
+    <canvas id="solarCanvas"></canvas>
 
     <script src="js/simulation.js"></script>
 </body>
 </html>
+
 

@@ -36,15 +36,13 @@ public class PhysicsEngine {
         for (CelestialBody body : bodies) {
             if (body == sun) continue;
             
-            // Calculate orbital parameters
             double dx = body.getX() - sun.getX();
             double dy = body.getY() - sun.getY();
             double r = Math.sqrt(dx*dx + dy*dy + SOFTENING);
-            
-            // Circular orbit velocity (v = sqrt(G*M/r))
-            double orbitalVelocity = Math.sqrt(G * sun.getMass() / r);
-            
-            // Set velocity perpendicular to position vector
+
+            //Account for eccentricity
+            double orbitalVelocity = Math.sqrt(G * sun.getMass() * (1 + body.getEccentricity()) / r);
+
             double angle = Math.atan2(dy, dx);
             body.setVx(-orbitalVelocity * Math.sin(angle));
             body.setVy(orbitalVelocity * Math.cos(angle));
