@@ -10,7 +10,7 @@ public class PhysicsEngine {
     private static final double SOFTENING = 1e9;   // Prevent division by zero (meters)
     
     // Time parameters
-    private static final double BASE_TIME_STEP = 3600; // 1 hour in seconds
+    private static final double BASE_TIME_STEP = 600; // 1 hour in seconds
     
     /**
      * Updates all celestial bodies' positions and velocities

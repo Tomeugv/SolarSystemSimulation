@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.solar.controller.ViewportController;
 import com.solar.model.CelestialBody;
 import com.solar.model.SimulationState;
+
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -19,8 +20,7 @@ public class SimulationServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-            this.state = (SimulationState) getServletContext()
-                .getAttribute("simulationState");
+            this.state = (SimulationState) getServletContext().getAttribute("simulationState");
             this.viewport = new ViewportController(800, 600); // Default size
         } catch (Exception e) {
             throw new ServletException("Initialization failed", e);
@@ -35,14 +35,11 @@ public class SimulationServlet extends HttpServlet {
         resp.setContentType("application/json");
         
         try {
-            // Handle viewport controls
             handleViewportChanges(req);
             
-            // Update physics
             double timeScale = parseTimeScale(req);
-            PhysicsEngine.update(state.getBodies(), timeScale * 3600); // Scale to seconds
+            PhysicsEngine.update(state.getBodies(), timeScale);
             
-            // Prepare response
             Map<String, Object> response = new HashMap<>();
             response.put("scale", viewport.getCurrentScale());
             response.put("bodies", prepareBodyData());
@@ -80,16 +77,20 @@ public class SimulationServlet extends HttpServlet {
         for (CelestialBody body : state.getBodies()) {
             Map<String, Object> data = new HashMap<>();
             Map<String, Double> screenPos = viewport.calculateScreenPosition(
-                body.getX(), body.getY());
-            
+                body.getX(), body.getY()
+            );
+
             data.put("name", body.getName());
             data.put("screenX", screenPos.get("x"));
             data.put("screenY", screenPos.get("y"));
+            data.put("worldX", body.getX()); 
+            data.put("worldY", body.getY());  
             data.put("radius", body.getRadius());
             data.put("color", body.getColor());
-            
+
             bodyData.add(data);
         }
         return bodyData;
     }
+
 }

@@ -4,7 +4,6 @@ import com.solar.model.SimulationState;
 import com.google.gson.Gson;
 
 import java.io.IOException;
-
 import javax.servlet.*;
 import javax.servlet.http.*;
 import javax.servlet.annotation.*;
@@ -20,7 +19,6 @@ public class ResetServlet extends HttpServlet {
         resp.setContentType("application/json");
         
         try {
-            // Get the simulation state from application context
             SimulationState state = (SimulationState) getServletContext()
                 .getAttribute("simulationState");
             
@@ -28,10 +26,7 @@ public class ResetServlet extends HttpServlet {
                 throw new Exception("Simulation state not initialized");
             }
             
-            // Perform the reset
             state.reset();
-            
-            // Return the updated state
             resp.getWriter().write(new Gson().toJson(state.getBodies()));
             
         } catch (Exception e) {
