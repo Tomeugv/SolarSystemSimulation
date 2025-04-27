@@ -3,39 +3,43 @@ package com.solar;
 import com.solar.model.CelestialBody;
 import java.util.List;
 
+/**
+ * Motor de simulació física per al sistema solar.
+ * Gestiona les forces gravitatòries i el moviment orbital dels cossos celestes.
+ */
 public class PhysicsEngine {
-    // Physical constants
-    private static final double G = 6.67430e-11;  // Gravitational constant (m^3 kg^-1 s^-2)
-    private static final double AU = 1.496e11;     // Astronomical unit in meters
-    private static final double SOFTENING = 1e9;   // Prevent division by zero (meters)
+    // Constants físiques
+    private static final double G = 6.67430e-11;  // Constant gravitacional 
+    private static final double AU = 1.496e11;     // Unitat astronòmica en metres
+    private static final double SOFTENING = 1e9;   // Factor de suavitzat per evitar divisions per zero
     
-    // Time parameters
-    private static final double BASE_TIME_STEP = 600; // 1 hour in seconds
-    
+    // Paràmetres temporals
+    private static final double BASE_TIME_STEP = 600; // Pas de temps base
+
     /**
-     * Updates all celestial bodies' positions and velocities
-     * @param bodies List of celestial bodies
-     * @param timeScale Time scaling factor (1.0 = real-time)
+     * Actualitza les posicions i velocitats de tots els cossos celestes.
      */
     public static void update(List<CelestialBody> bodies, double timeScale) {
         double effectiveTimeStep = BASE_TIME_STEP * timeScale;
         
-        // Calculate all forces first (O(n^2) n-body problem)
+        // 1. Calcula totes les forces gravitatòries 
         double[][] forces = calculateGravitationalForces(bodies);
         
-        // Update velocities and positions
+        // 2. Actualitza velocitats i posicions
         updatePositionsAndVelocities(bodies, forces, effectiveTimeStep);
     }
     
     /**
-     * Initializes stable orbital velocities around the Sun
+     * Inicialitza òrbites estables al voltant del Sol.
+
      */
     public static void initializeOrbits(List<CelestialBody> bodies) {
         CelestialBody sun = findSun(bodies);
 
         for (CelestialBody body : bodies) {
-            if (body == sun) continue;
+            if (body == sun) continue; // El Sol no orbita a si mateix
 
+            // Càlcul de distància al Sol
             double dx = body.getX() - sun.getX();
             double dy = body.getY() - sun.getY();
             double r = Math.sqrt(dx * dx + dy * dy + SOFTENING);
@@ -44,42 +48,44 @@ public class PhysicsEngine {
             double orbitalVelocity;
 
             if (semiMajorAxis > 0) {
-                // Correct vis-viva formula
+                // Fórmula vis-viva per a òrbites el·líptiques
                 orbitalVelocity = Math.sqrt(G * sun.getMass() * (2.0 / r - 1.0 / semiMajorAxis));
             } else {
-                // fallback to circular if something wrong
+                // Velocitat orbital circular
                 orbitalVelocity = Math.sqrt(G * sun.getMass() / r);
             }
 
+            // Càlcul de components de velocitat
             double angle = Math.atan2(dy, dx);
-
-            body.setVx(-orbitalVelocity * Math.sin(angle));
-            body.setVy(orbitalVelocity * Math.cos(angle));
+            body.setVx(-orbitalVelocity * Math.sin(angle)); // Component x
+            body.setVy(orbitalVelocity * Math.cos(angle));  // Component y
         }
     }
 
-    
-    // Private helper methods
+
+    /**
+     * Calcula les forces gravitatòries entre tots els cossos.
+     */
     private static double[][] calculateGravitationalForces(List<CelestialBody> bodies) {
-        double[][] forces = new double[bodies.size()][2];
+        double[][] forces = new double[bodies.size()][2]; // Matriu de forces [x,y] per cada cos
         
         for (int i = 0; i < bodies.size(); i++) {
             CelestialBody a = bodies.get(i);
             for (int j = i + 1; j < bodies.size(); j++) {
                 CelestialBody b = bodies.get(j);
                 
-                // Calculate distance components
+                // Vector distància entre cossos
                 double dx = b.getX() - a.getX();
                 double dy = b.getY() - a.getY();
-                double rSquared = dx*dx + dy*dy + SOFTENING;
+                double rSquared = dx*dx + dy*dy + SOFTENING; // Distància al quadrat + suavitzat
                 double r = Math.sqrt(rSquared);
                 
-                // Gravitational force (F = G*m1*m2/r^2)
+                // Llei de gravitació universal
                 double force = G * a.getMass() * b.getMass() / rSquared;
-                double fx = force * dx/r;
-                double fy = force * dy/r;
+                double fx = force * dx/r; // Component x de la força
+                double fy = force * dy/r; // Component y de la força
                 
-                // Apply equal and opposite forces
+                // Aplicar forces iguals i oposades (3a llei de Newton)
                 forces[i][0] += fx;
                 forces[i][1] += fy;
                 forces[j][0] -= fx;
@@ -89,37 +95,45 @@ public class PhysicsEngine {
         return forces;
     }
     
+    /**
+     * Actualitza posicions i velocitats usant integració Euler simple.
+     */
     private static void updatePositionsAndVelocities(List<CelestialBody> bodies, 
             double[][] forces, double timeStep) {
         for (int i = 0; i < bodies.size(); i++) {
             CelestialBody body = bodies.get(i);
             
-            // Update velocity (F = ma -> a = F/m)
+            // Acceleració = Força / Massa 
             double ax = forces[i][0] / body.getMass();
             double ay = forces[i][1] / body.getMass();
+            
+            // Actualitzar velocitat 
             body.setVx(body.getVx() + ax * timeStep);
             body.setVy(body.getVy() + ay * timeStep);
             
-            // Update position
+            // Actualitzar posició
             body.setX(body.getX() + body.getVx() * timeStep);
             body.setY(body.getY() + body.getVy() * timeStep);
         }
     }
     
+    /**
+     * Troba el Sol a la llista de cossos celestes.
+     */
     private static CelestialBody findSun(List<CelestialBody> bodies) {
         return bodies.stream()
             .filter(b -> "Sun".equals(b.getName()))
             .findFirst()
-            .orElseThrow(() -> new IllegalArgumentException("Solar system must contain a Sun"));
+            .orElseThrow(() -> new IllegalArgumentException("El sistema solar ha de contenir un Sol"));
     }
     
     /**
-     * Converts world coordinates to screen coordinates
+     * Converteix coordenades a coordenades de pantalla.
      */
     public static double[] toScreenCoordinates(double worldX, double worldY, 
             double centerX, double centerY, double scale) {
         return new double[] {
-            centerX + (worldX / AU * scale),
+            centerX + (worldX / AU * scale), // Conversió UA a píxels
             centerY + (worldY / AU * scale)
         };
     }
